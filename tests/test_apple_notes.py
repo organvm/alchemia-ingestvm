@@ -3,14 +3,19 @@
 import json
 import subprocess
 
+import pytest
+
 from alchemia.channels.apple_notes import export_alchemia_notes, export_note_body
 
 
-def test_export_notes_success(monkeypatch, tmp_path):
+@pytest.fixture(autouse=True)
+def local_notes_output_dir(monkeypatch, tmp_path):
     import alchemia.channels.apple_notes as mod
 
     monkeypatch.setattr(mod, "NOTES_OUTPUT_DIR", tmp_path / "notes")
 
+
+def test_export_notes_success(monkeypatch):
     notes_json = [
         json.dumps({"id": "1", "title": "Note A", "modified": "2026-01-01", "body_length": 100}),
         json.dumps({"id": "2", "title": "Note B", "modified": "2026-01-02", "body_length": 200}),
