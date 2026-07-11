@@ -351,7 +351,7 @@ def insert_snapshot(
         (node_id, full_name, ref, now_iso(), pushed_at, stargazers_count,
          open_issue_count, state_json),
     )
-    return int(cur.lastrowid)
+    return int(cur.lastrowid or 0)
 
 
 def insert_artifact(conn: sqlite3.Connection, node_id: str, full_name: str, art: Any) -> None:
