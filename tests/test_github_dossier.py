@@ -28,12 +28,14 @@ def fake_gh_api(path: str, *, accept=None, jq=None):
     if path.endswith("/languages"):
         return {"Python": 800, "Shell": 200}
     if "/git/trees/" in path:
-        return {"tree": [
-            {"path": "src/pkg/__init__.py", "type": "blob"},
-            {"path": "src/pkg/core.py", "type": "blob"},
-            {"path": "tests/test_core.py", "type": "blob"},
-            {"path": "README.md", "type": "blob"},
-        ]}
+        return {
+            "tree": [
+                {"path": "src/pkg/__init__.py", "type": "blob"},
+                {"path": "src/pkg/core.py", "type": "blob"},
+                {"path": "tests/test_core.py", "type": "blob"},
+                {"path": "README.md", "type": "blob"},
+            ],
+        }
     if "/contents/" in path:
         # strip ?ref=
         rel = path.split("/contents/", 1)[1].split("?", 1)[0]

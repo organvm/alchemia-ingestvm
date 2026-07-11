@@ -13,23 +13,57 @@ from __future__ import annotations
 from alchemia.github.client import GitHubError, gh_api
 
 # SPDX ids that permit code adaptation with attribution + provenance.
-PERMISSIVE_SPDX = frozenset({
-    "MIT", "MIT-0", "APACHE-2.0", "BSD-2-CLAUSE", "BSD-3-CLAUSE", "BSD-3-CLAUSE-CLEAR",
-    "ISC", "0BSD", "UNLICENSE", "ZLIB", "BSL-1.0", "PYTHON-2.0", "POSTGRESQL",
-    "CC0-1.0", "WTFPL", "NCSA",
-})
+PERMISSIVE_SPDX = frozenset(
+    {
+        "MIT",
+        "MIT-0",
+        "APACHE-2.0",
+        "BSD-2-CLAUSE",
+        "BSD-3-CLAUSE",
+        "BSD-3-CLAUSE-CLEAR",
+        "ISC",
+        "0BSD",
+        "UNLICENSE",
+        "ZLIB",
+        "BSL-1.0",
+        "PYTHON-2.0",
+        "POSTGRESQL",
+        "CC0-1.0",
+        "WTFPL",
+        "NCSA",
+    },
+)
 
 # SPDX ids whose obligations require explicit acceptance before code reuse.
-COPYLEFT_SPDX = frozenset({
-    "GPL-2.0", "GPL-3.0", "GPL-2.0-ONLY", "GPL-2.0-OR-LATER", "GPL-3.0-ONLY",
-    "GPL-3.0-OR-LATER", "AGPL-3.0", "AGPL-3.0-ONLY", "AGPL-3.0-OR-LATER",
-    "LGPL-2.1", "LGPL-3.0", "LGPL-2.1-ONLY", "LGPL-3.0-ONLY", "MPL-2.0",
-    "EPL-2.0", "CDDL-1.0", "OSL-3.0", "EUPL-1.2",
-})
+COPYLEFT_SPDX = frozenset(
+    {
+        "GPL-2.0",
+        "GPL-3.0",
+        "GPL-2.0-ONLY",
+        "GPL-2.0-OR-LATER",
+        "GPL-3.0-ONLY",
+        "GPL-3.0-OR-LATER",
+        "AGPL-3.0",
+        "AGPL-3.0-ONLY",
+        "AGPL-3.0-OR-LATER",
+        "LGPL-2.1",
+        "LGPL-3.0",
+        "LGPL-2.1-ONLY",
+        "LGPL-3.0-ONLY",
+        "MPL-2.0",
+        "EPL-2.0",
+        "CDDL-1.0",
+        "OSL-3.0",
+        "EUPL-1.2",
+    },
+)
 
 CONTRACT_FILES = {
     "contributing": [
-        "CONTRIBUTING.md", "CONTRIBUTING", ".github/CONTRIBUTING.md", "docs/CONTRIBUTING.md",
+        "CONTRIBUTING.md",
+        "CONTRIBUTING",
+        ".github/CONTRIBUTING.md",
+        "docs/CONTRIBUTING.md",
     ],
     "security": ["SECURITY.md", ".github/SECURITY.md"],
     "code_of_conduct": ["CODE_OF_CONDUCT.md", ".github/CODE_OF_CONDUCT.md"],

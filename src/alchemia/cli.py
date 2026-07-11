@@ -414,8 +414,10 @@ def cmd_stars_sync(args):
     print(f"  login={s['login']}  total={s['total']}")
     print(f"  new={s['new']}  refreshed={s['refreshed']}  unstarred={s['unstarred']}")
     counts = storage.counts(conn)
-    print(f"  store: {counts['currently_starred']} currently starred, "
-          f"{counts['exchange']} exchanges, {counts['dossier']} dossiers")
+    print(
+        f"  store: {counts['currently_starred']} currently starred, "
+        f"{counts['exchange']} exchanges, {counts['dossier']} dossiers",
+    )
     conn.close()
 
 
@@ -430,8 +432,15 @@ def cmd_stars_status(args):
     print(f"  db: {args.db or storage.default_db_path()}")
     print(f"  last_sync: {storage.get_meta(conn, 'last_sync', 'never')}")
     print(f"  gh_login: {storage.get_meta(conn, 'gh_login', '—')}")
-    for key in ("external_repo", "currently_starred", "star_event",
-                "repo_snapshot", "artifact", "dossier", "exchange"):
+    for key in (
+        "external_repo",
+        "currently_starred",
+        "star_event",
+        "repo_snapshot",
+        "artifact",
+        "dossier",
+        "exchange",
+    ):
         print(f"  {key}: {counts.get(key, 0)}")
     conn.close()
 
@@ -461,8 +470,10 @@ def cmd_stars_dossier(args):
         result = materialize(conn, row["node_id"], MaterializationLevel.DOSSIER)
         status = result.get("status")
         if status == "materialized":
-            print(f"  {result['repo']}: ref={result['snapshot_ref'][:10]} "
-                  f"artifacts={result['artifacts']}")
+            print(
+                f"  {result['repo']}: ref={result['snapshot_ref'][:10]} "
+                f"artifacts={result['artifacts']}",
+            )
         else:
             print(f"  {row['full_name']}: {status}")
     conn.close()
@@ -609,16 +620,23 @@ def main():
 
     ps_doss = stars_sub.add_parser("dossier", help="Build S1 dossiers")
     ps_doss.add_argument("repo", nargs="?", help="owner/project (omit for --new batch)")
-    ps_doss.add_argument("--new", dest="new", action="store_true",
-                         help="Dossier the next batch of un-dossiered stars")
+    ps_doss.add_argument(
+        "--new",
+        dest="new",
+        action="store_true",
+        help="Dossier the next batch of un-dossiered stars",
+    )
     ps_doss.add_argument("--limit", type=int, default=25, help="Batch size for --new")
     ps_doss.add_argument("--db")
     ps_doss.set_defaults(func=cmd_stars_dossier)
 
     ps_mat = stars_sub.add_parser("materialize", help="Materialize one repo to a level")
     ps_mat.add_argument("repo", help="owner/project")
-    ps_mat.add_argument("--level", choices=["index", "dossier", "inspect", "contribute"],
-                        default="dossier")
+    ps_mat.add_argument(
+        "--level",
+        choices=["index", "dossier", "inspect", "contribute"],
+        default="dossier",
+    )
     ps_mat.add_argument("--db")
     ps_mat.set_defaults(func=cmd_stars_materialize)
 

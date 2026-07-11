@@ -22,9 +22,19 @@ DOSSIER_SCHEMA_VERSION = "1.0"
 
 # Manifests we probe for (presence only) to sketch the architecture cheaply.
 MANIFEST_FILES = [
-    "pyproject.toml", "setup.py", "requirements.txt", "package.json", "go.mod",
-    "Cargo.toml", "pom.xml", "build.gradle", "Gemfile", "composer.json",
-    "Dockerfile", "flake.nix", ".github/workflows",
+    "pyproject.toml",
+    "setup.py",
+    "requirements.txt",
+    "package.json",
+    "go.mod",
+    "Cargo.toml",
+    "pom.xml",
+    "build.gradle",
+    "Gemfile",
+    "composer.json",
+    "Dockerfile",
+    "flake.nix",
+    ".github/workflows",
 ]
 
 README_CANDIDATES = ["README.md", "README.rst", "README", "readme.md"]
@@ -188,8 +198,12 @@ def build_dossier(
         exchange = storage.exchange_for_repo(conn, repo.node_id)
         exchange_id = exchange["exchange_id"] if exchange else ""
         storage.insert_snapshot(
-            conn, node_id=repo.node_id, full_name=repo.full_name, ref=ref,
-            pushed_at=repo.pushed_at, stargazers_count=repo.stargazers_count,
+            conn,
+            node_id=repo.node_id,
+            full_name=repo.full_name,
+            ref=ref,
+            pushed_at=repo.pushed_at,
+            stargazers_count=repo.stargazers_count,
             open_issue_count=repo.open_issues_count,
         )
         for art in artifacts:

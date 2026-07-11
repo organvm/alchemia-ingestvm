@@ -26,10 +26,12 @@ def as_references(stars: list[dict]) -> list[dict]:
     """
     refs = []
     for star in stars:
-        refs.append({
-            "type": "url",
-            "source": star.get("url", ""),
-            "tags": ["github-star", star.get("primary_language", "").lower() or "repo"],
-            "notes": star.get("description", ""),
-        })
+        refs.append(
+            {
+                "type": "url",
+                "source": star.get("url", ""),
+                "tags": ["github-star", star.get("primary_language", "").lower() or "repo"],
+                "notes": star.get("description", ""),
+            },
+        )
     return refs

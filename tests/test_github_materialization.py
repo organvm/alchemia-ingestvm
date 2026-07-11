@@ -30,9 +30,15 @@ def db(tmp_path):
 
 def _seed(db, *, private=False):
     repo = StarredRepo(
-        full_name="astral-sh/ruff", node_id="R_kg1", owner="astral-sh", name="ruff",
-        url="https://github.com/astral-sh/ruff", starred_at="2026-06-01T00:00:00Z",
-        primary_language="Rust", license_spdx="MIT", default_branch="main",
+        full_name="astral-sh/ruff",
+        node_id="R_kg1",
+        owner="astral-sh",
+        name="ruff",
+        url="https://github.com/astral-sh/ruff",
+        starred_at="2026-06-01T00:00:00Z",
+        primary_language="Rust",
+        license_spdx="MIT",
+        default_branch="main",
         is_private=private,
     )
     sync_stars(db, stars=[repo], login="t")

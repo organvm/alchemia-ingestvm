@@ -74,25 +74,40 @@ def sync_stars(
         is_new = storage.upsert_external_repo(conn, repo, seen_at=seen_at)
         if is_new:
             exchange_id = storage.seed_exchange(
-                conn, node_id=repo.node_id, full_name=repo.full_name, state="STARRED",
+                conn,
+                node_id=repo.node_id,
+                full_name=repo.full_name,
+                state="STARRED",
             )
             storage.record_star_event(
-                conn, node_id=repo.node_id, full_name=repo.full_name,
-                event="star", at=repo.starred_at or seen_at, exchange_id=exchange_id,
+                conn,
+                node_id=repo.node_id,
+                full_name=repo.full_name,
+                event="star",
+                at=repo.starred_at or seen_at,
+                exchange_id=exchange_id,
             )
             summary.new += 1
         elif was_unstarred:
             # Re-star: record the event and reattach (or seed) an exchange spine.
             exchange = storage.exchange_for_repo(conn, repo.node_id)
             exchange_id = (
-                exchange["exchange_id"] if exchange
+                exchange["exchange_id"]
+                if exchange
                 else storage.seed_exchange(
-                    conn, node_id=repo.node_id, full_name=repo.full_name, state="STARRED",
+                    conn,
+                    node_id=repo.node_id,
+                    full_name=repo.full_name,
+                    state="STARRED",
                 )
             )
             storage.record_star_event(
-                conn, node_id=repo.node_id, full_name=repo.full_name,
-                event="star", at=seen_at, exchange_id=exchange_id,
+                conn,
+                node_id=repo.node_id,
+                full_name=repo.full_name,
+                event="star",
+                at=seen_at,
+                exchange_id=exchange_id,
             )
             summary.refreshed += 1
         else:
@@ -103,8 +118,11 @@ def sync_stars(
         if row["node_id"] not in live_node_ids:
             storage.mark_unstarred(conn, row["node_id"])
             storage.record_star_event(
-                conn, node_id=row["node_id"], full_name=row["full_name"],
-                event="unstar", at=seen_at,
+                conn,
+                node_id=row["node_id"],
+                full_name=row["full_name"],
+                event="unstar",
+                at=seen_at,
             )
             summary.unstarred += 1
 

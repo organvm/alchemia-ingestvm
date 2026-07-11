@@ -18,9 +18,9 @@ class MaterializationLevel(str, Enum):
     escalate the level only for high-resonance / contribution candidates.
     """
 
-    INDEX = "S0"      # id/name/url/owner/description/topics/timestamps
-    DOSSIER = "S1"    # + README/license/manifests/contribution files/health
-    INSPECT = "S2"    # + selected source tree / architecture / dependency graph
+    INDEX = "S0"  # id/name/url/owner/description/topics/timestamps
+    DOSSIER = "S1"  # + README/license/manifests/contribution files/health
+    INSPECT = "S2"  # + selected source tree / architecture / dependency graph
     CONTRIBUTE = "S3"  # + ephemeral fork/worktree/test env (engine-owned)
 
     @property

@@ -235,11 +235,23 @@ def upsert_external_repo(conn: sqlite3.Connection, repo: Any, *, seen_at: str) -
             VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1,'S0',?,?)
             """,
             (
-                repo.node_id, repo.full_name, repo.owner, repo.name, repo.url,
-                repo.owner_type, repo.description, json.dumps(repo.topics),
-                repo.primary_language, repo.default_branch, int(repo.archived),
-                int(repo.fork), int(repo.is_private), repo.license_spdx,
-                repo.starred_at, seen_at, seen_at,
+                repo.node_id,
+                repo.full_name,
+                repo.owner,
+                repo.name,
+                repo.url,
+                repo.owner_type,
+                repo.description,
+                json.dumps(repo.topics),
+                repo.primary_language,
+                repo.default_branch,
+                int(repo.archived),
+                int(repo.fork),
+                int(repo.is_private),
+                repo.license_spdx,
+                repo.starred_at,
+                seen_at,
+                seen_at,
             ),
         )
         return True
@@ -252,10 +264,21 @@ def upsert_external_repo(conn: sqlite3.Connection, repo: Any, *, seen_at: str) -
         WHERE node_id=?
         """,
         (
-            repo.full_name, repo.owner, repo.name, repo.url, repo.owner_type,
-            repo.description, json.dumps(repo.topics), repo.primary_language,
-            repo.default_branch, int(repo.archived), int(repo.fork),
-            int(repo.is_private), repo.license_spdx, seen_at, repo.node_id,
+            repo.full_name,
+            repo.owner,
+            repo.name,
+            repo.url,
+            repo.owner_type,
+            repo.description,
+            json.dumps(repo.topics),
+            repo.primary_language,
+            repo.default_branch,
+            int(repo.archived),
+            int(repo.fork),
+            int(repo.is_private),
+            repo.license_spdx,
+            seen_at,
+            repo.node_id,
         ),
     )
     return False
@@ -299,8 +322,7 @@ def record_star_event(
     exchange_id: str = "",
 ) -> None:
     conn.execute(
-        "INSERT INTO star_event(node_id, full_name, event, at, exchange_id) "
-        "VALUES(?,?,?,?,?)",
+        "INSERT INTO star_event(node_id, full_name, event, at, exchange_id) VALUES(?,?,?,?,?)",
         (node_id, full_name, event, at, exchange_id),
     )
 
@@ -326,8 +348,7 @@ def seed_exchange(
 
 def exchange_for_repo(conn: sqlite3.Connection, node_id: str) -> sqlite3.Row | None:
     return conn.execute(
-        "SELECT * FROM exchange WHERE external_repo_node_id=? "
-        "ORDER BY created_at DESC LIMIT 1",
+        "SELECT * FROM exchange WHERE external_repo_node_id=? ORDER BY created_at DESC LIMIT 1",
         (node_id,),
     ).fetchone()
 
@@ -348,8 +369,16 @@ def insert_snapshot(
         "INSERT INTO repo_snapshot(node_id, full_name, ref, snapshot_at, "
         "pushed_at, stargazers_count, open_issue_count, state_json) "
         "VALUES(?,?,?,?,?,?,?,?)",
-        (node_id, full_name, ref, now_iso(), pushed_at, stargazers_count,
-         open_issue_count, state_json),
+        (
+            node_id,
+            full_name,
+            ref,
+            now_iso(),
+            pushed_at,
+            stargazers_count,
+            open_issue_count,
+            state_json,
+        ),
     )
     return int(cur.lastrowid or 0)
 
@@ -358,8 +387,18 @@ def insert_artifact(conn: sqlite3.Connection, node_id: str, full_name: str, art:
     conn.execute(
         "INSERT INTO artifact(node_id, full_name, kind, name, source_url, ref, "
         "fetched_at, sha256, bytes_len, truncated) VALUES(?,?,?,?,?,?,?,?,?,?)",
-        (node_id, full_name, art.kind, art.name, art.source_url, art.ref,
-         art.fetched_at, art.sha256, art.bytes_len, int(art.truncated)),
+        (
+            node_id,
+            full_name,
+            art.kind,
+            art.name,
+            art.source_url,
+            art.ref,
+            art.fetched_at,
+            art.sha256,
+            art.bytes_len,
+            int(art.truncated),
+        ),
     )
 
 
@@ -376,9 +415,14 @@ def upsert_dossier(conn: sqlite3.Connection, dossier: Any, *, exchange_id: str =
             snapshot_at=excluded.snapshot_at, exchange_id=excluded.exchange_id
         """,
         (
-            dossier.github_node_id, dossier.external_repo, dossier.level,
-            dossier.schema_version, dossier.snapshot_ref, dossier.snapshot_at,
-            json.dumps(dossier.to_dict()), exchange_id,
+            dossier.github_node_id,
+            dossier.external_repo,
+            dossier.level,
+            dossier.schema_version,
+            dossier.snapshot_ref,
+            dossier.snapshot_at,
+            json.dumps(dossier.to_dict()),
+            exchange_id,
         ),
     )
 
@@ -402,8 +446,14 @@ def get_dossier(
 def counts(conn: sqlite3.Connection) -> dict[str, int]:
     """Summary row counts for status reporting."""
     out: dict[str, int] = {}
-    for table in ("external_repo", "star_event", "repo_snapshot", "artifact",
-                  "dossier", "exchange"):
+    for table in (
+        "external_repo",
+        "star_event",
+        "repo_snapshot",
+        "artifact",
+        "dossier",
+        "exchange",
+    ):
         row = conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()  # noqa: S608
         out[table] = int(row["n"])
     starred = conn.execute(
