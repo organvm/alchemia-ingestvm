@@ -402,6 +402,108 @@ def cmd_gdocs_status(args):
         print("\n  Create a folder named 'Alchemia' in Google Drive to get started.")
 
 
+def cmd_stars_sync(args):
+    """Sync the GitHub star corpus into the BIFRONS portal store."""
+    from alchemia.github import storage
+    from alchemia.github.sync import sync_stars
+
+    conn = storage.connect(args.db)
+    print("STARS SYNC — enumerating starred repositories via gh...")
+    summary = sync_stars(conn)
+    s = summary.as_dict()
+    print(f"  login={s['login']}  total={s['total']}")
+    print(f"  new={s['new']}  refreshed={s['refreshed']}  unstarred={s['unstarred']}")
+    counts = storage.counts(conn)
+    print(
+        f"  store: {counts['currently_starred']} currently starred, "
+        f"{counts['exchange']} exchanges, {counts['dossier']} dossiers",
+    )
+    conn.close()
+
+
+def cmd_stars_status(args):
+    """Show BIFRONS portal store status."""
+    from alchemia.github import storage
+
+    conn = storage.connect(args.db)
+    storage.init_intake_schema(conn)
+    counts = storage.counts(conn)
+    print("STARS STATUS —")
+    print(f"  db: {args.db or storage.default_db_path()}")
+    print(f"  last_sync: {storage.get_meta(conn, 'last_sync', 'never')}")
+    print(f"  gh_login: {storage.get_meta(conn, 'gh_login', '—')}")
+    for key in (
+        "external_repo",
+        "currently_starred",
+        "star_event",
+        "repo_snapshot",
+        "artifact",
+        "dossier",
+        "exchange",
+    ):
+        print(f"  {key}: {counts.get(key, 0)}")
+    conn.close()
+
+
+def cmd_stars_dossier(args):
+    """Build S1 dossiers — for one repo, or the next --new batch of stars."""
+    from alchemia.github import storage
+    from alchemia.github.materialize import materialize
+    from alchemia.github.models import MaterializationLevel
+
+    conn = storage.connect(args.db)
+    storage.init_intake_schema(conn)
+
+    targets = []
+    if args.repo:
+        row = storage.get_external_repo_by_full_name(conn, args.repo)
+        if row is None:
+            print(f"  {args.repo} not found — run 'alchemia stars sync' first.")
+            conn.close()
+            return
+        targets.append(row)
+    else:
+        targets = storage.repos_needing_dossier(conn, limit=args.limit)
+
+    print(f"STARS DOSSIER — building {len(targets)} S1 dossier(s)...")
+    for row in targets:
+        result = materialize(conn, row["node_id"], MaterializationLevel.DOSSIER)
+        status = result.get("status")
+        if status == "materialized":
+            print(
+                f"  {result['repo']}: ref={result['snapshot_ref'][:10]} "
+                f"artifacts={result['artifacts']}",
+            )
+        else:
+            print(f"  {row['full_name']}: {status}")
+    conn.close()
+
+
+def cmd_stars_materialize(args):
+    """Materialize one repo to a chosen level (index/dossier/inspect/contribute)."""
+    from alchemia.github import storage
+    from alchemia.github.materialize import materialize
+    from alchemia.github.models import MaterializationLevel
+
+    level_map = {
+        "index": MaterializationLevel.INDEX,
+        "dossier": MaterializationLevel.DOSSIER,
+        "inspect": MaterializationLevel.INSPECT,
+        "contribute": MaterializationLevel.CONTRIBUTE,
+    }
+    conn = storage.connect(args.db)
+    storage.init_intake_schema(conn)
+    row = storage.get_external_repo_by_full_name(conn, args.repo)
+    if row is None:
+        print(f"  {args.repo} not found — run 'alchemia stars sync' first.")
+        conn.close()
+        return
+    result = materialize(conn, row["node_id"], level_map[args.level])
+    for key, value in result.items():
+        print(f"  {key}: {value}")
+    conn.close()
+
+
 DEFAULT_SOURCE_DIRS = [
     "~/Workspace/intake",
     "~/Workspace/meta-organvm",
@@ -504,7 +606,45 @@ def main():
     p_gdstatus = sub.add_parser("gdocs-status", help="Show Google Docs integration status")
     p_gdstatus.set_defaults(func=cmd_gdocs_status)
 
+    # stars — BIFRONS GitHub star intake (inbound half of the portal)
+    p_stars = sub.add_parser("stars", help="BIFRONS: absorb the GitHub star corpus")
+    stars_sub = p_stars.add_subparsers(dest="stars_command")
+
+    ps_sync = stars_sub.add_parser("sync", help="Sync all starred repos into the portal store")
+    ps_sync.add_argument("--db", help="Portal DB path (default ~/.organvm/bifrons/portal.db)")
+    ps_sync.set_defaults(func=cmd_stars_sync)
+
+    ps_status = stars_sub.add_parser("status", help="Show portal store status")
+    ps_status.add_argument("--db")
+    ps_status.set_defaults(func=cmd_stars_status)
+
+    ps_doss = stars_sub.add_parser("dossier", help="Build S1 dossiers")
+    ps_doss.add_argument("repo", nargs="?", help="owner/project (omit for --new batch)")
+    ps_doss.add_argument(
+        "--new",
+        dest="new",
+        action="store_true",
+        help="Dossier the next batch of un-dossiered stars",
+    )
+    ps_doss.add_argument("--limit", type=int, default=25, help="Batch size for --new")
+    ps_doss.add_argument("--db")
+    ps_doss.set_defaults(func=cmd_stars_dossier)
+
+    ps_mat = stars_sub.add_parser("materialize", help="Materialize one repo to a level")
+    ps_mat.add_argument("repo", help="owner/project")
+    ps_mat.add_argument(
+        "--level",
+        choices=["index", "dossier", "inspect", "contribute"],
+        default="dossier",
+    )
+    ps_mat.add_argument("--db")
+    ps_mat.set_defaults(func=cmd_stars_materialize)
+
     args = parser.parse_args()
+    # Nested subcommands: show help if a group was named without an action.
+    if args.command == "stars" and not getattr(args, "stars_command", None):
+        p_stars.print_help()
+        sys.exit(1)
     if not args.command:
         parser.print_help()
         sys.exit(1)
